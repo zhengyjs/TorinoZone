@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ Copyright © 2016, 2017 Red Hat, Inc. and others.  All rights reserved.
+
+ This program and the accompanying materials are made available under the
+ terms of the Eclipse Public License v1.0 which accompanies this distribution,
+ and is available at http://www.eclipse.org/legal/epl-v10.html
+ -->
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <!--
+         Base parent POM for building and packaging single Karaf features.
+         Karaf features are generated based on the POM dependencies; they can be supplemented by a base
+         feature.xml file in src/main/feature.
+
+         By default, such single features aren't tested for loadability; they're supposed to be aggregated
+         in a feature repository (see feature-repo-parent), which is tested using SingleFeatureTest. The
+         sft profile can be used to enforce SingleFeatureTest on single features too.
+
+         Single features which aren't part of a repository can not be considered part of a project's API.
+         In any case, refer to each project's declared features to determine their API and future
+         availability.
+
+         Users should do the following:
+
+         - specify this as their parent
+         - make sure the packaging is set to feature
+         - setup projects <dependencies/> as needed for their features
+    -->
+
+    <parent>
+        <groupId>org.opendaylight.odlparent</groupId>
+        <artifactId>untested-single-feature-parent</artifactId>
+        <version>5.0.1-SNAPSHOT</version>
+        <relativePath>../untested-single-feature-parent</relativePath>
+    </parent>
+
+    <artifactId>single-feature-parent</artifactId>
+    <packaging>pom</packaging>
+    <name>ODL :: odlparent :: ${project.artifactId}</name>
+
+    <properties>
+        <jacoco.skip>true</jacoco.skip>
+        <skip.karaf.featureTest>false</skip.karaf.featureTest>
+    </properties>
+
+    <dependencies>
+        <!-- Test the generated features.xml -->
+        <dependency>
+            <groupId>org.opendaylight.odlparent</groupId>
+            <artifactId>features-test</artifactId>
+            <version>5.0.1-SNAPSHOT</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.opendaylight.odlparent</groupId>
+            <artifactId>bundles-test-lib</artifactId>
+            <version>5.0.1-SNAPSHOT</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.karaf.bundle</groupId>
+            <artifactId>org.apache.karaf.bundle.core</artifactId>
+            <version>${karaf.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <!-- Force SLF4J to test scope -->
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.osgi</groupId>
+            <!-- required due to https://jira.opendaylight.org/browse/ODLPARENT-136 -->
+            <artifactId>osgi.cmpn</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <dependenciesToScan>
+                        <dependency>org.opendaylight.odlparent:features-test</dependency>
+                    </dependenciesToScan>
+                    <additionalClasspathElements>
+                        <additionalClasspathElement>${project.build.directory}/feature</additionalClasspathElement>
+                    </additionalClasspathElements>
+                    <skip>${skip.karaf.featureTest}</skip>
+                    <systemPropertyVariables>
+                      <!-- Use the same repository for Pax Exam as is used for Maven -->
+                      <org.ops4j.pax.url.mvn.localRepository>${settings.localRepository}</org.ops4j.pax.url.mvn.localRepository>
+                    </systemPropertyVariables>
+                </configuration>
+                <executions>
+                    <execution>
+                        <phase>test</phase>
+                        <goals>
+                            <goal>test</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>

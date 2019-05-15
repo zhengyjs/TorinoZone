@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ Copyright © 2016 Red Hat, Inc. and others.  All rights reserved.
+
+ This program and the accompanying materials are made available under the
+ terms of the Eclipse Public License v1.0 which accompanies this distribution,
+ and is available at http://www.eclipse.org/legal/epl-v10.html
+ -->
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <!--
+         Base parent POM for building, packaging and testing Karaf feature repositories.
+         Karaf features are generated based on the POM dependencies; they can be supplemented by a base
+         feature.xml file in src/main/feature.
+
+         Users should do the following:
+
+         - specify this as their parent
+         - make sure the packaging is set to feature
+         - specify features to be provided in the repository by depending on them in the project <dependencies/>
+    -->
+
+    <parent>
+        <groupId>org.opendaylight.odlparent</groupId>
+        <artifactId>odlparent</artifactId>
+        <version>5.0.1-SNAPSHOT</version>
+        <relativePath>../odlparent</relativePath>
+    </parent>
+
+    <artifactId>feature-repo-parent</artifactId>
+    <packaging>pom</packaging>
+    <name>ODL :: odlparent :: ${project.artifactId}</name>
+
+    <properties>
+        <skip.karaf.featureTest>true</skip.karaf.featureTest>
+        <jacoco.skip>true</jacoco.skip>
+    </properties>
+
+    <dependencies>
+        <!-- Test the generated features.xml -->
+        <dependency>
+            <groupId>org.opendaylight.odlparent</groupId>
+            <artifactId>features-test</artifactId>
+            <version>5.0.1-SNAPSHOT</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.opendaylight.odlparent</groupId>
+            <artifactId>bundles-test-lib</artifactId>
+            <version>5.0.1-SNAPSHOT</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.karaf.bundle</groupId>
+            <artifactId>org.apache.karaf.bundle.core</artifactId>
+            <version>${karaf.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <!-- Force SLF4J to test scope -->
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <!-- This generates the META-INF/maven/dependencies.properties file
+                     which is required by the versionAsInProject() used in SingleFeatureTest -->
+                <groupId>org.apache.servicemix.tooling</groupId>
+                <artifactId>depends-maven-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <skip>${skip.karaf.featureTest}</skip>
+                    <dependenciesToScan>
+                        <dependency>org.opendaylight.odlparent:features-test</dependency>
+                    </dependenciesToScan>
+                    <additionalClasspathElements>
+                        <additionalClasspathElement>${project.build.directory}/feature</additionalClasspathElement>
+                    </additionalClasspathElements>
+                </configuration>
+                <executions>
+                    <execution>
+                        <phase>test</phase>
+                        <goals>
+                            <goal>test</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.karaf.tooling</groupId>
+                <artifactId>karaf-maven-plugin</artifactId>
+                <extensions>true</extensions>
+                <configuration>
+                    <enableGeneration>true</enableGeneration>
+                </configuration>
+            </plugin>
+        </plugins>
+        <pluginManagement>
+          <plugins>
+            <!--This plugin's configuration is used to store Eclipse m2e settings only. It has no influence on the Maven build itself.-->
+            <plugin>
+              <groupId>org.eclipse.m2e</groupId>
+              <artifactId>lifecycle-mapping</artifactId>
+              <version>1.0.0</version>
+              <configuration>
+                <lifecycleMappingMetadata>
+                  <pluginExecutions>
+                    <pluginExecution>
+                      <pluginExecutionFilter>
+                        <groupId>org.apache.karaf.tooling</groupId>
+                        <artifactId>karaf-maven-plugin</artifactId>
+                        <versionRange>[4.1.5,)</versionRange>
+                        <goals>
+                          <goal>verify</goal>
+                        </goals>
+                      </pluginExecutionFilter>
+                      <action>
+                        <ignore></ignore>
+                      </action>
+                    </pluginExecution>
+                  </pluginExecutions>
+                </lifecycleMappingMetadata>
+              </configuration>
+            </plugin>
+          </plugins>
+        </pluginManagement>
+    </build>
+
+</project>

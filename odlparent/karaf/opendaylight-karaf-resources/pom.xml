@@ -1,0 +1,245 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ Copyright (c) 2014 Cisco Systems, Inc. and others.  All rights reserved.
+
+ This program and the accompanying materials are made available under the
+ terms of the Eclipse Public License v1.0 which accompanies this distribution,
+ and is available at http://www.eclipse.org/legal/epl-v10.html
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>org.opendaylight.odlparent</groupId>
+    <artifactId>odlparent</artifactId>
+    <version>5.0.1-SNAPSHOT</version>
+    <relativePath>../../odlparent</relativePath>
+  </parent>
+  <artifactId>opendaylight-karaf-resources</artifactId>
+  <description>Resources for opendaylight-karaf</description>
+  <packaging>jar</packaging>
+  <name>ODL :: odlparent :: ${project.artifactId}</name>
+  <properties>
+    <!-- There are a lot of duplicate classes in the dependencies below, but this is not a real issue,
+         because this is not a real Java artifact; it's just packaging.  (TODO: Ideally, this artifact should
+         just have odlparent-lite not odlparent as parent, and not run Java static code analysis tools.)
+      -->
+    <duplicate-finder.skip>true</duplicate-finder.skip>
+  </properties>
+  <dependencies>
+    <dependency>
+      <groupId>org.apache.karaf.features</groupId>
+      <artifactId>framework</artifactId>
+      <version>${karaf.version}</version>
+      <type>kar</type>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.karaf.features</groupId>
+      <artifactId>standard</artifactId>
+      <version>${karaf.version}</version>
+      <classifier>features</classifier>
+      <type>xml</type>
+      <scope>runtime</scope>
+    </dependency>
+
+    <!-- BouncyCastle Framework Extension Bundles -->
+    <dependency>
+      <groupId>org.opendaylight.odlparent</groupId>
+      <artifactId>bcpkix-framework-ext</artifactId>
+      <scope>runtime</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.opendaylight.odlparent</groupId>
+      <artifactId>bcprov-framework-ext</artifactId>
+      <scope>runtime</scope>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <resources>
+      <resource>
+        <directory>src/main/resources</directory>
+        <filtering>false</filtering>
+      </resource>
+    </resources>
+    <plugins>
+      <plugin>
+        <artifactId>maven-antrun-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>patch-karaf-scripts</id>
+            <phase>prepare-package</phase>
+            <goals>
+              <goal>run</goal>
+            </goals>
+            <configuration>
+              <target>
+                <!-- Patches only work with LF line endings from ant -->
+                <fixcrlf srcdir="${project.build.directory}/assembly/bin"
+                         includes="*.bat" eol="lf"/>
+                <patch patchfile="${project.basedir}/src/main/patches/karaf-instance.patch"
+                       originalfile="${project.build.directory}/assembly/bin/instance"
+                       failonerror="true"/>
+                <copy file="${project.build.directory}/assembly/bin/instance"
+                      tofile="${project.build.directory}/classes/bin/instance"/>
+                <patch patchfile="${project.basedir}/src/main/patches/karaf-instance.bat.patch"
+                       originalfile="${project.build.directory}/assembly/bin/instance.bat"
+                       failonerror="true" ignorewhitespace="true"/>
+                <copy file="${project.build.directory}/assembly/bin/instance.bat"
+                      tofile="${project.build.directory}/classes/bin/instance.bat"/>
+                <patch patchfile="${project.basedir}/src/main/patches/karaf-inc-${karaf.version}.patch"
+                       originalfile="${project.build.directory}/assembly/bin/inc"
+                       failonerror="true"/>
+                <copy file="${project.build.directory}/assembly/bin/inc"
+                      tofile="${project.build.directory}/classes/bin/inc"/>
+                <patch patchfile="${project.basedir}/src/main/patches/karaf-karaf-${karaf.version}.patch"
+                       originalfile="${project.build.directory}/assembly/bin/karaf"
+                       failonerror="true"/>
+                <copy file="${project.build.directory}/assembly/bin/karaf"
+                      tofile="${project.build.directory}/classes/bin/karaf"/>
+                <patch patchfile="${project.basedir}/src/main/patches/karaf-karaf.bat.patch"
+                       originalfile="${project.build.directory}/assembly/bin/karaf.bat"
+                       failonerror="true"/>
+                <copy file="${project.build.directory}/assembly/bin/karaf.bat"
+                      tofile="${project.build.directory}/classes/bin/karaf.bat"/>
+                <patch patchfile="${project.basedir}/src/main/patches/karaf-setenv-${karaf.version}.patch"
+                       originalfile="${project.build.directory}/assembly/bin/setenv"
+                       failonerror="true"/>
+                <copy file="${project.build.directory}/assembly/bin/setenv"
+                      tofile="${project.build.directory}/classes/bin/setenv"/>
+                <patch patchfile="${project.basedir}/src/main/patches/karaf-setenv.bat.patch"
+                       originalfile="${project.build.directory}/assembly/bin/setenv.bat"
+                       failonerror="true"/>
+                <copy file="${project.build.directory}/assembly/bin/setenv.bat"
+                      tofile="${project.build.directory}/classes/bin/setenv.bat"/>
+                <patch patchfile="${project.basedir}/src/main/patches/karaf-quiesce-${karaf.version}.patch"
+                       originalfile="${project.build.directory}/assembly/system/org/apache/karaf/features/standard/${karaf.version}/standard-${karaf.version}-features.xml"
+                       failonerror="true"/>
+                <replace file="${project.build.directory}/assembly/system/org/apache/karaf/features/standard/${karaf.version}/standard-${karaf.version}-features.xml"
+                         token="commons-codec/commons-codec/1.10" value="commons-codec/commons-codec/1.12" failOnNoReplacements="true"/>
+                <replace file="${project.build.directory}/assembly/system/org/apache/karaf/features/standard/${karaf.version}/standard-${karaf.version}-features.xml"
+                         token="org.apache.commons/commons-lang3/3.8.1" value="org.apache.commons/commons-lang3/3.9" failOnNoReplacements="true"/>
+                <!-- fixes https://issues.apache.org/jira/browse/KARAF-5086 -->
+                <replace file="${project.build.directory}/assembly/system/org/apache/karaf/features/standard/${karaf.version}/standard-${karaf.version}-features.xml"
+                         token="org.apache.aries.proxy/org.apache.aries.proxy/1.1.3" value="org.apache.aries.proxy/org.apache.aries.proxy/1.1.4" failOnNoReplacements="true"/>
+                <copy file="${project.build.directory}/assembly/system/org/apache/karaf/features/standard/${karaf.version}/standard-${karaf.version}-features.xml"
+                      tofile="${project.build.directory}/classes/system/org/apache/karaf/features/standard/${karaf.version}/standard-${karaf.version}-features.xml"/>
+                <replace file="${project.build.directory}/assembly/system/org/ops4j/pax/web/pax-web-features/7.2.5/pax-web-features-7.2.5-features.xml"
+                         token="commons-beanutils/commons-beanutils/1.8.3" value="commons-beanutils/commons-beanutils/1.9.3" failOnNoReplacements="true"/>
+                <replace file="${project.build.directory}/assembly/system/org/ops4j/pax/web/pax-web-features/7.2.5/pax-web-features-7.2.5-features.xml"
+                         token="commons-codec/commons-codec/1.8" value="commons-codec/commons-codec/1.12" failOnNoReplacements="true"/>
+                <replace file="${project.build.directory}/assembly/system/org/ops4j/pax/web/pax-web-features/7.2.5/pax-web-features-7.2.5-features.xml"
+                         token="javax.mail/mail/1.4.4" value="javax.mail/mail/1.4.7" failOnNoReplacements="true"/>
+                <replace file="${project.build.directory}/assembly/system/org/ops4j/pax/web/pax-web-features/7.2.5/pax-web-features-7.2.5-features.xml"
+                         token="org.apache.aries/org.apache.aries.util/1.1.0" value="org.apache.aries/org.apache.aries.util/1.1.3" failOnNoReplacements="true"/>
+                <copy file="${project.build.directory}/assembly/system/org/ops4j/pax/web/pax-web-features/7.2.5/pax-web-features-7.2.5-features.xml"
+                      tofile="${project.build.directory}/classes/system/org/ops4j/pax/web/pax-web-features/7.2.5/pax-web-features-7.2.5-features.xml"/>
+                <!-- Add startup bundles to startup.properties — order is significant, bundles are wired in declaration order -->
+                <echo file="${project.build.directory}/assembly/etc/startup.properties" append="true">
+# The following are added by opendaylight-karaf-resources
+mvn\:org.osgi/org.osgi.service.event/1.3.1 = 7
+mvn\:org.apache.felix/org.apache.felix.metatype/1.2.2 = 8
+mvn\:org.opendaylight.odlparent/bcprov-framework-ext/${project.version} = 14
+mvn\:org.opendaylight.odlparent/bcpkix-framework-ext/${project.version} = 14
+mvn\:org.apache.aries.blueprint/org.apache.aries.blueprint.core.compatibility/1.0.0 = 14
+                </echo>
+                <copy file="${project.build.directory}/assembly/etc/startup.properties"
+                      tofile="${project.build.directory}/classes/etc/startup.properties"/>
+                <fixcrlf srcdir="${project.build.directory}/classes/bin"
+                         includes="*.bat" eol="crlf"/>
+              </target>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-dependency-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>copy</id>
+            <goals>
+              <goal>copy</goal>
+            </goals>
+            <phase>generate-resources</phase>
+            <configuration>
+              <artifactItems>
+                <!-- Needs to be copied to lib/boot in order have it accessible to Main class -->
+                <artifactItem>
+                    <groupId>org.bouncycastle</groupId>
+                    <artifactId>bcprov-ext-jdk15on</artifactId>
+                    <version>${bouncycastle.version}</version>
+                    <outputDirectory>target/classes/lib/boot</outputDirectory>
+                    <destFileName>bcprov-ext-jdk15on-${bouncycastle.version}.jar</destFileName>
+                </artifactItem>
+                <artifactItem>
+                    <groupId>org.bouncycastle</groupId>
+                    <artifactId>bcpkix-jdk15on</artifactId>
+                    <version>${bouncycastle.version}</version>
+                    <outputDirectory>target/classes/lib/boot</outputDirectory>
+                    <destFileName>bcpkix-jdk15on-${bouncycastle.version}.jar</destFileName>
+                </artifactItem>
+              </artifactItems>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>build-helper-maven-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>attach-artifacts</id>
+            <goals>
+              <goal>attach-artifact</goal>
+            </goals>
+            <phase>package</phase>
+            <configuration>
+              <artifacts>
+                <artifact>
+                  <file>src/main/assembly/etc/org.ops4j.pax.url.mvn.cfg</file>
+                  <type>properties</type>
+                  <classifier>config</classifier>
+                </artifact>
+              </artifacts>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <!-- We do this here only so that we can patch a few files,
+             but we then "throw away" (do not package) most of it,
+             as the karaf4-parent will do this again                -->
+        <groupId>org.apache.karaf.tooling</groupId>
+        <artifactId>karaf-maven-plugin</artifactId>
+        <version>${karaf.version}</version>
+        <executions>
+          <execution>
+            <id>process-resources</id>
+            <phase>process-resources</phase>
+            <goals>
+              <goal>assembly</goal>
+            </goals>
+          </execution>
+      </executions>
+      </plugin>
+      <!-- This needs to execute before patching, otherwise the feature will be left unpatched -->
+      <plugin>
+        <groupId>org.opendaylight.odlparent</groupId>
+        <artifactId>karaf-plugin</artifactId>
+        <version>5.0.1-SNAPSHOT</version>
+        <executions>
+          <execution>
+            <id>populate-local-repo</id>
+            <phase>prepare-package</phase>
+            <goals>
+              <goal>populate-local-repo</goal>
+            </goals>
+            <configuration>
+              <localRepo>${project.build.directory}/assembly/system</localRepo>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+</project>

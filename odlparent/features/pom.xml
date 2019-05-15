@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ Copyright © 2016, 2017 Red Hat, Inc. and others.  All rights reserved.
+
+ This program and the accompanying materials are made available under the
+ terms of the Eclipse Public License v1.0 which accompanies this distribution,
+ and is available at http://www.eclipse.org/legal/epl-v10.html
+ -->
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.opendaylight.odlparent</groupId>
+        <artifactId>odlparent-lite</artifactId>
+        <version>5.0.1-SNAPSHOT</version>
+        <relativePath>../odlparent-lite</relativePath>
+    </parent>
+
+    <artifactId>features-aggregator</artifactId>
+    <packaging>pom</packaging>
+    <name>ODL :: odlparent :: ${project.artifactId}</name>
+
+    <properties>
+        <maven.deploy.skip>true</maven.deploy.skip>
+        <maven.install.skip>true</maven.install.skip>
+    </properties>
+
+    <modules>
+        <!-- Proxy features for Karaf-provided features -->
+        <module>odl-karaf-feat-feature</module>
+        <module>odl-karaf-feat-jdbc</module>
+        <module>odl-karaf-feat-jetty</module>
+        <module>odl-karaf-feat-war</module>
+
+        <!-- General features -->
+        <module>features-odlparent</module>
+        <module>odl-akka-all</module>
+        <module>odl-akka-clustering-2.5</module>
+        <module>odl-akka-leveldb-0.7</module>
+        <module>odl-akka-leveldb-0.10</module>
+        <module>odl-akka-persistence-2.5</module>
+        <module>odl-akka-scala-2.12</module>
+        <module>odl-akka-system-2.5</module>
+        <module>odl-antlr4</module>
+        <module>odl-apache-commons-codec</module>
+        <module>odl-apache-commons-lang3</module>
+        <module>odl-apache-commons-net</module>
+        <module>odl-apache-commons-text</module>
+        <module>odl-apache-sshd</module>
+        <module>odl-dropwizard-metrics</module>
+        <module>odl-gson</module>
+        <module>odl-guava</module>
+        <module>odl-jackson-2.9</module>
+        <module>odl-javassist-3</module>
+        <module>odl-jersey-2</module>
+        <module>odl-jung-2.1</module>
+        <module>odl-lmax-3</module>
+        <module>odl-netty-4</module>
+        <module>odl-servlet-api</module>
+        <module>odl-stax2-api</module>
+        <module>odl-woodstox</module>
+        <module>odl-ws-rs-api</module>
+
+        <!-- Test features -->
+        <module>odl-bundle-test</module>
+    </modules>
+</project>
